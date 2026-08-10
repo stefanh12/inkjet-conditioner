@@ -6,10 +6,16 @@
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
   "startup": "application",
   "boot": "auto",
-  "host_network": true,
+  "init": false,
+  "host_network": false,
   "ports": {},
   "ports_description": {},
   "map": ["config:rw", "share:rw"],
+  "hassio_api": true,
+  "homeassistant": "0.110.0",
+  "ingress": false,
+  "panel_icon": "mdi:printer",
+  "panel_title": "Inkjet Conditioner",
   "options": {
     "printer_name": "",
     "printer_host": "",
@@ -40,5 +46,8 @@
     "schedule_description": "str?",
     "last_run": "str?"
   },
-  "image": "ghcr.io/home-assistant/{arch}-addon-inkjet-conditioner"
+  "image": "ghcr.io/home-assistant/{arch}-addon-inkjet-conditioner",
+  "services": [],
+  "healthcheck": "CMD-SHELL",
+  "healthcheck_args": ["/app/healthcheck.sh"]
 }

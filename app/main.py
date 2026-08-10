@@ -222,6 +222,7 @@ def main() -> int:
     save_options(options_path, options)
 
     print("Inkjet Conditioner add-on started")
+    print(json.dumps({"status": "running", "configured_printer": resolve_printer_target(options).get("name")}, indent=2))
     print(json.dumps({"printers": options["discovered_printers"]}, indent=2))
     if options.get("schedule_description"):
         print(json.dumps({"schedule": options["schedule_description"]}, indent=2))
