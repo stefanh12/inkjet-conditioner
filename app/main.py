@@ -146,6 +146,33 @@ def build_setup_page(options: Dict[str, Any]) -> str:
             function applyDetectedPrinter(select) {{ const selected=select.options[select.selectedIndex]; if (!selected || !selected.value) return; const form=select.form; form.printer_name.value=selected.dataset.name || form.printer_name.value; form.printer_host.value=selected.value; form.printer_uri.value=selected.dataset.uri || form.printer_uri.value; }} function showFileName(input) {{ if (input.files[0]) document.getElementById('file-name').textContent=input.files[0].name; }} async function refreshPrinters() {{ const note=document.getElementById('discovery-note'); note.textContent='Looking for newly discovered printers...'; const response=await fetch('/api/printers'); const data=await response.json(); const select=document.getElementById('detected-printers'); select.innerHTML='<option value="">Select a detected printer</option>'; data.printers.forEach((printer)=>{{ const option=new Option(`${{printer.name}} - ${{printer.model || 'Unknown model'}} (${{printer.host}})`,printer.host); option.dataset.name=printer.name; option.dataset.uri=printer.uri; select.add(option); }}); note.textContent=data.printers.length ? `${{data.printers.length}} printer(s) detected.` : 'Still scanning. Try refresh again in a moment.'; }} document.getElementById('setup-form').addEventListener('submit',async(event)=>{{ event.preventDefault(); const result=document.getElementById('result'); result.textContent='Saving configuration and sending test page...'; const response=await fetch('/api/setup',{{method:'POST',body:new FormData(event.currentTarget)}}); const data=await response.json(); result.textContent=data.status==='ok' ? 'Saved. Test print queued successfully.' : 'Unable to save configuration.'; }}); setTimeout(refreshPrinters,3500);
                 </script>
                 <script>
+                    const scheduleGrid = document.querySelectorAll('.section')[2].querySelector('.grid-3');
+                    const frequencyControl = scheduleGrid.firstElementChild;
+                    scheduleGrid.style.alignItems = 'end';
+                    frequencyControl.style.display = 'grid';
+                    frequencyControl.style.gap = '7px';
+                    const setupForm = document.getElementById('setup-form');
+                    const testButton = setupForm.querySelector('.action-row button');
+                    testButton.textContent = 'Save and test print';
+                    testButton.value = 'test';
+                    const saveButton = document.createElement('button');
+                    saveButton.type = 'submit';
+                    saveButton.value = 'save';
+                    saveButton.className = 'secondary';
+                    saveButton.textContent = 'Save settings';
+                    testButton.parentElement.insertBefore(saveButton, testButton);
+                    setupForm.addEventListener('submit', async (event) => {{
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        const result = document.getElementById('result');
+                        const action = event.submitter?.value || 'test';
+                        result.textContent = action === 'test' ? 'Saving configuration and sending maintenance print...' : 'Saving configuration...';
+                        const formData = new FormData(setupForm);
+                        formData.set('action', action);
+                        const response = await fetch('/api/setup', {{ method: 'POST', body: formData }});
+                        const data = await response.json();
+                        result.textContent = data.status === 'ok' ? (action === 'test' ? 'Saved. Maintenance print queued successfully.' : 'Settings saved.') : 'Unable to save configuration.';
+                    }}, true);
                     const navItems = document.querySelectorAll('.nav-item');
                     const navTargets = [
                         document.querySelector('.section'),
@@ -553,11 +580,13 @@ def build_app() -> Flask:
         if "schedule_day_of_month" in payload and payload["schedule_day_of_month"] not in (None, ""):
             options["schedule_day_of_month"] = int(payload["schedule_day_of_month"])
 
-        options["discovered_printers"] = discover_printers(options)
-        result = print_document(options, options.get("document_path") or None)
-        options["setup_complete"] = result.get("status") == "queued"
+        action = payload.get("action", "test")
+        result = None
+        if action == "test":
+            result = print_document(options, options.get("document_path") or None)
+            options["setup_complete"] = result.get("status") == "queued"
         save_options(options_path, options)
-        return jsonify({"status": "ok", "result": result, "setup_complete": options["setup_complete"]})
+        return jsonify({"status": "ok", "action": action, "result": result, "setup_complete": options["setup_complete"]})
 
     @app.route("/api/printers")
     def printers() -> Any:

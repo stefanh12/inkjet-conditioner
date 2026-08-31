@@ -72,6 +72,16 @@ class SchedulerTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Keep your ink moving.", response.data)
 
+    def test_saving_setup_does_not_print(self):
+        with tempfile.TemporaryDirectory() as temp_dir, patch.dict(os.environ, {"OPTIONS_PATH": os.path.join(temp_dir, "options.json")}, clear=False), patch("app.main.discover_printers", return_value=[]), patch("app.main.print_document") as print_mock:
+            client = build_app().test_client()
+            client.post("/login", data={"username": "admin", "password": "inkjet"})
+            response = client.post("/api/setup", data={"printer_name": "Office Printer", "action": "save"})
+
+        self.assertEqual(response.get_json()["action"], "save")
+        self.assertIsNone(response.get_json()["result"])
+        print_mock.assert_not_called()
+
     def test_environment_override_webui_port_is_used(self):
         self.assertEqual(get_webui_port({"WEBUI_PORT": "8081"}), 8081)
 
