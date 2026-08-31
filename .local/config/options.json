@@ -1,0 +1,17 @@
+{
+  "printer_name": "",
+  "printer_host": "",
+  "printer_uri": "",
+  "test_page_text": "Inkjet Conditioner test page",
+  "document_path": "",
+  "uploaded_document_name": "",
+  "schedule_enabled": false,
+  "schedule_type": "daily",
+  "schedule_hour": 8,
+  "schedule_weekday": "monday",
+  "schedule_day_of_month": 1,
+  "schedule_description": "Print once every day at 08:00",
+  "last_run": "",
+  "discovered_printers": [],
+  "setup_complete": false
+}

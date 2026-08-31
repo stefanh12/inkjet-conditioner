@@ -1,0 +1,28 @@
+services:
+  inkjet-conditioner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inkjet-conditioner
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      WEBUI_PORT: "8000"
+      OPTIONS_PATH: "/data/options.json"
+      PRINTER_NAME: "Office Printer"
+      PRINTER_HOST: "192.168.1.50"
+      PRINTER_URI: "ipp://192.168.1.50/ipp/print"
+      TEST_PAGE_TEXT: "Unraid test page"
+      DOCUMENT_PATH: "/share/print-jobs/example.txt"
+      UPLOADED_DOCUMENT_NAME: "example.txt"
+      SCHEDULE_ENABLED: "true"
+      SCHEDULE_TYPE: "weekly"
+      SCHEDULE_HOUR: "8"
+      SCHEDULE_WEEKDAY: "monday"
+      SCHEDULE_DAY_OF_MONTH: "1"
+      SCHEDULE_DESCRIPTION: "Print every Monday at 08:00"
+    volumes:
+      - ./appdata:/data
+      - ./print-jobs:/share
+    network_mode: host

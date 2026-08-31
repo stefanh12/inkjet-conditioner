@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container version="2">
+  <Name>inkjet-conditioner</Name>
+  <Repository>stefanh12/inkjet-conditioner:latest</Repository>
+  <Registry>https://index.docker.io/v1/</Registry>
+  <Network>host</Network>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/stefanh12/inkjet-conditioner/issues</Support>
+  <Project>https://github.com/stefanh12/inkjet-conditioner</Project>
+  <Overview>Host-networked inkjet maintenance prints to help prevent nozzle clogs on Unraid.</Overview>
+  <Description><![CDATA[
+Inkjet Conditioner is a lightweight local printing utility built for Unraid. It automatically discovers LAN printers through Bonjour/mDNS and common print services, then schedules regular low-volume maintenance prints to help prevent inkjet nozzle clogs.
+
+Host networking is required for reliable automatic printer detection because Bonjour/mDNS multicast and the fallback LAN scan need access to Unraid's LAN interface. Bridge, macvlan, ipvlan, and isolated networks may still print to manually configured printer IPs, but discovery is not guaranteed.
+
+The app stores its config in persistent appdata and exposes a small web UI so you can confirm printer settings, test the print path, and adjust the schedule without editing container environment variables by hand.
+  ]]></Description>
+  <Category>Tools:</Category>
+  <WebUI>http://[IP]:[PORT:8000]/</WebUI>
+  <Icon>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/main/icon.svg</Icon>
+  <TemplateURL>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/main/inkjet-conditioner.xml</TemplateURL>
+  <ReadMe>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/blob/main/README.md</ReadMe>
+  <DonateText></DonateText>
+  <DonateLink></DonateLink>
+  <MinVer>6.12.0</MinVer>
+  <Config Name="Web UI Port" Target="WEBUI_PORT" Default="8000" Mode="" Description="HTTP port used by the built-in web UI." Type="Port" Display="always" Required="true" Mask="false">8000</Config>
+  <Config Name="Web UI Username" Target="WEBUI_USERNAME" Default="admin" Mode="" Description="Username required to access the Web UI." Type="Text" Display="always" Required="true" Mask="false">admin</Config>
+  <Config Name="Web UI Password" Target="WEBUI_PASSWORD" Default="inkjet" Mode="" Description="Password required to access the Web UI. Change this before exposing the app outside your trusted network." Type="Password" Display="always" Required="true" Mask="true">inkjet</Config>
+  <Config Name="Appdata Directory" Target="/config" Default="/mnt/user/appdata/inkjet-conditioner" Mode="rw" Description="Persistent storage for app settings, printer discovery, and print jobs." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/inkjet-conditioner</Config>
+  <Config Name="Shared Print Folder" Target="/share" Default="/mnt/user/print-jobs" Mode="rw" Description="Folder containing documents or uploaded files that should be printed." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/print-jobs</Config>
+  <Config Name="Printer Name" Target="PRINTER_NAME" Default="" Mode="" Description="Friendly printer name shown in the UI and logs." Type="Text" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Printer Host" Target="PRINTER_HOST" Default="" Mode="" Description="Hostname or IP address of the printer on the local network." Type="Text" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Printer URI" Target="PRINTER_URI" Default="" Mode="" Description="Optional printer URI such as ipp://192.168.1.50/ipp/print." Type="Text" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Maintenance Print Text" Target="TEST_PAGE_TEXT" Default="Inkjet Conditioner maintenance print" Mode="" Description="Text included in the maintenance print when no document is selected." Type="Text" Display="always" Required="false" Mask="false">Inkjet Conditioner maintenance print</Config>
+  <Config Name="Document Path" Target="DOCUMENT_PATH" Default="/share/print-jobs/example.txt" Mode="" Description="Optional document to print each time the scheduler or test action runs." Type="Text" Display="always" Required="false" Mask="false">/share/print-jobs/example.txt</Config>
+  <Config Name="Uploaded Document Name" Target="UPLOADED_DOCUMENT_NAME" Default="" Mode="" Description="Friendly name used when a document is uploaded to the app data directory." Type="Text" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Schedule Enabled" Target="SCHEDULE_ENABLED" Default="false" Mode="" Description="Enable the recurring scheduler." Type="Boolean" Display="always" Required="false" Mask="false">false</Config>
+  <Config Name="Schedule Type" Target="SCHEDULE_TYPE" Default="daily" Mode="" Description="Choose daily, weekly, or monthly scheduling." Type="Text" Display="always" Required="false" Mask="false">daily</Config>
+  <Config Name="Schedule Hour" Target="SCHEDULE_HOUR" Default="8" Mode="" Description="Hour of the day when the job should run." Type="Text" Display="always" Required="false" Mask="false">8</Config>
+  <Config Name="Schedule Weekday" Target="SCHEDULE_WEEKDAY" Default="monday" Mode="" Description="Weekday used for weekly schedules." Type="Text" Display="always" Required="false" Mask="false">monday</Config>
+  <Config Name="Schedule Day of Month" Target="SCHEDULE_DAY_OF_MONTH" Default="1" Mode="" Description="Day of month used for monthly schedules." Type="Text" Display="always" Required="false" Mask="false">1</Config>
+  <Config Name="Schedule Description" Target="SCHEDULE_DESCRIPTION" Default="Print once every day at 08:00" Mode="" Description="Human-readable description shown in logs and the status page." Type="Text" Display="always" Required="false" Mask="false">Print once every day at 08:00</Config>
+</Container>

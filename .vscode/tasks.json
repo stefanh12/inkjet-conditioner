@@ -1,0 +1,135 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Docker: Build image",
+      "type": "shell",
+      "command": "docker build -t inkjet-conditioner:local .",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Build Docker Hub image",
+      "type": "shell",
+      "command": "docker build -t ${input:dockerHubUser}/inkjet-conditioner:${input:imageTag} -t ${input:dockerHubUser}/inkjet-conditioner:latest .",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Start local test container",
+      "type": "shell",
+      "command": "mkdir -p .local/config .local/files && (docker rm -f inkjet-conditioner-local 2>/dev/null || true) && docker run -d --name inkjet-conditioner-local -p 8000:8000 -v ${workspaceFolder}/.local/config:/config -v ${workspaceFolder}/.local/files:/share -e WEBUI_PORT=8000 inkjet-conditioner:local",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Deploy local test container",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Docker: Build image",
+        "Docker: Start local test container"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Smoke test local image",
+      "type": "shell",
+      "command": "docker run --rm -d --name inkjet-conditioner-smoke -p 8000:8000 -e WEBUI_PORT=8000 -e PRINTER_NAME=SmokeTest -e SCHEDULE_ENABLED=false inkjet-conditioner:local && sleep 5 && curl -fsS http://127.0.0.1:8000/ && docker rm -f inkjet-conditioner-smoke",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Login to Docker Hub",
+      "type": "shell",
+      "command": "docker login",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Push image to Docker Hub",
+      "type": "shell",
+      "command": "docker push ${input:dockerHubUser}/inkjet-conditioner:${input:imageTag} && docker push ${input:dockerHubUser}/inkjet-conditioner:latest",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Build and push release",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Docker: Build Docker Hub image",
+        "Docker: Push image to Docker Hub"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Show image tags",
+      "type": "shell",
+      "command": "docker images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' | grep inkjet-conditioner || true",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "dockerHubUser",
+      "type": "promptString",
+      "description": "Docker Hub username or org",
+      "default": "stefanh12"
+    },
+    {
+      "id": "imageTag",
+      "type": "promptString",
+      "description": "Docker image tag to build and publish",
+      "default": "latest"
+    }
+  ]
+}
