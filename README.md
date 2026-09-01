@@ -18,12 +18,12 @@ Unraid is the supported deployment target. The Community Apps template is [inkje
 
 The initial login is `admin` / `inkjet`. Change these template values before exposing the Web UI outside a trusted network.
 
-### Required mappings
+### Storage mappings
 
 | Unraid host path | Container path | Purpose |
 | --- | --- | --- |
 | `/mnt/user/appdata/inkjet-conditioner` | `/config` | Persistent configuration, uploads, and generated print jobs. |
-| `/mnt/user/print-jobs` | `/share` | Optional maintenance documents stored on the array or cache. |
+| `/mnt/user/print-jobs` | `/share` | Optional maintenance documents stored on the array or cache. A file such as `/mnt/user/print-jobs/example.txt` is available to the container as `/share/example.txt`. |
 
 Do not map appdata to `/data`; the container stores persistent state at `/config`.
 
@@ -103,7 +103,7 @@ PRINTER_NAME=Office Printer
 PRINTER_HOST=192.168.1.50
 PRINTER_URI=ipp://192.168.1.50/ipp/print
 TEST_PAGE_TEXT=Inkjet Conditioner maintenance print
-DOCUMENT_PATH=/share/print-jobs/example.txt
+DOCUMENT_PATH=/share/example.txt
 UPLOADED_DOCUMENT_NAME=example.txt
 SCHEDULE_ENABLED=true
 SCHEDULE_TYPE=weekly
