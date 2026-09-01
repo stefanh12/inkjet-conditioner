@@ -23,7 +23,7 @@ The initial login is `admin` / `inkjet`. Change these template values before exp
 | Unraid host path | Container path | Purpose |
 | --- | --- | --- |
 | `/mnt/user/appdata/inkjet-conditioner` | `/config` | Persistent configuration, uploads, and generated print jobs. |
-| `/mnt/user/print-jobs` | `/share` | Optional maintenance documents stored on the array or cache. A file such as `/mnt/user/print-jobs/example.txt` is available to the container as `/share/example.txt`. |
+| `/mnt/user/appdata/inkjet-conditioner/print-jobs` | `/share` | Optional maintenance documents stored on the array or cache. A file such as `/mnt/user/print-jobs/example.txt` is available to the container as `/share/example.txt`. |
 
 Do not map appdata to `/data`; the container stores persistent state at `/config`.
 
