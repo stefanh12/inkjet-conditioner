@@ -1,5 +1,7 @@
 # Inkjet Conditioner
 
+<img src="icons/conditioner%20256%E2%80%8A%20%C3%97%E2%80%8A%20256.png" alt="Inkjet Conditioner icon" width="128">
+
 Inkjet Conditioner is a small Docker app for:
 - discovering printers on the local network,
 - printing a small maintenance page to help prevent inkjet nozzle clogs,
