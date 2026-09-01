@@ -17,7 +17,7 @@ The app stores its config in persistent appdata and exposes a small web UI so yo
   ]]></Description>
   <Category>Tools:</Category>
   <WebUI>http://[IP]:[PORT:8000]/</WebUI>
-  <Icon>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/main/icon.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/refs/heads/main/icons/conditioner%20256%E2%80%8A%20%C3%97%E2%80%8A%20256.png</Icon>
   <TemplateURL>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/main/inkjet-conditioner.xml</TemplateURL>
   <ReadMe>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/main/README.md</ReadMe>
   <DonateText></DonateText>
