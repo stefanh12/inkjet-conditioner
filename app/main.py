@@ -16,6 +16,7 @@ from threading import Event, Thread
 from typing import Any, Dict, List
 
 from flask import Flask, jsonify, redirect, request, session, url_for
+from werkzeug.utils import secure_filename
 
 try:
     from zeroconf import ServiceBrowser, Zeroconf
@@ -490,7 +491,10 @@ def save_uploaded_document(file_obj: Any, filename: str, target_dir: str | None 
     storage = get_storage_paths()
     upload_dir = Path(target_dir) if target_dir else storage["uploads"]
     upload_dir.mkdir(parents=True, exist_ok=True)
-    target_path = upload_dir / filename
+    safe_filename = secure_filename(filename)
+    if not safe_filename:
+        raise ValueError("Uploaded document must have a valid filename.")
+    target_path = upload_dir / safe_filename
     if hasattr(file_obj, "read"):
         with open(target_path, "wb") as handle:
             handle.write(file_obj.read())

@@ -139,6 +139,13 @@ class SchedulerTests(unittest.TestCase):
             self.assertTrue(os.path.exists(saved_path))
             self.assertTrue(saved_path.endswith("sample.pdf"))
 
+    def test_uploaded_document_filename_cannot_escape_upload_directory(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            saved_path = save_uploaded_document(io.BytesIO(b"%PDF-1.4\n"), "../outside.pdf", temp_dir)
+
+            self.assertEqual(saved_path, os.path.join(temp_dir, "outside.pdf"))
+            self.assertFalse(os.path.exists(os.path.join(os.path.dirname(temp_dir), "outside.pdf")))
+
     def test_print_document_configures_a_cups_queue_for_an_ipp_uri(self):
         options = {
             "printer_name": "AirPrint Printer",
