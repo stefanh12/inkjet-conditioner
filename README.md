@@ -52,6 +52,20 @@ docker run --rm -p 8000:8000 \
   inkjet-conditioner
 ```
 
+## Docker Hub publishing
+
+The GitHub Actions workflow at `.github/workflows/publish-docker.yml` publishes
+`hstefan/inkjet-conditioner` when changes are pushed to `main`, when a `v*` tag
+is pushed, or when it is run manually.
+
+Add these repository secrets in GitHub under **Settings > Secrets and variables > Actions**:
+
+- `DOCKERHUB_USERNAME`: `hstefan`
+- `DOCKERHUB_TOKEN`: a Docker Hub personal access token with read/write permission
+
+The workflow publishes `latest` from `main`, and publishes the matching version
+tag for a Git tag such as `v1.0.0`.
+
 ### Docker Compose example
 
 ```yaml
