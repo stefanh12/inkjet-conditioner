@@ -13,10 +13,10 @@ Unraid is the supported deployment target. The Community Apps template is [inkje
 1. In Unraid, open **Docker** and select **Add Container**.
 2. Import the template or use its `TemplateURL` after publishing this repository.
 3. Keep the network type set to `host`.
-4. Set a unique `WEBUI_PASSWORD`.
+4. Set a non-empty, unique `WEBUI_PASSWORD`.
 5. Start the container and open `http://UNRAID-IP:8000`.
 
-The initial login is `admin` / `inkjet`. Change these template values before exposing the Web UI outside a trusted network.
+The username defaults to `admin`; you must choose a Web UI password when installing the container.
 
 ### Storage mappings
 
@@ -40,6 +40,7 @@ If no printer appears, wait a few seconds after startup, use **Refresh discovery
 ```bash
 docker build -t inkjet-conditioner .
 docker run --rm -p 8000:8000 \
+  -e WEBUI_PASSWORD="choose-a-unique-password" \
   -e PRINTER_NAME="Office Printer" \
   -e PRINTER_HOST="192.168.1.50" \
   -e PRINTER_URI="ipp://192.168.1.50/ipp/print" \
@@ -60,6 +61,7 @@ services:
       - "8000:8000"
     environment:
       WEBUI_PORT: "8000"
+      WEBUI_PASSWORD: "choose-a-unique-password"
       PRINTER_NAME: "Office Printer"
       PRINTER_HOST: "192.168.1.50"
       PRINTER_URI: "ipp://192.168.1.50/ipp/print"
@@ -92,7 +94,7 @@ The app accepts these environment variables for Unraid and Docker deployments:
 - `SCHEDULE_DESCRIPTION`: friendly description shown in logs
 - `WEBUI_PORT`: optional port override, default is `8000`
 - `WEBUI_USERNAME`: Web UI login username, default is `admin`
-- `WEBUI_PASSWORD`: Web UI login password, default is `inkjet`; set a unique value before exposing the Web UI outside your trusted network
+- `WEBUI_PASSWORD`: required Web UI login password; choose a unique value
 - `WEBUI_SECRET`: optional persistent signing secret for login sessions; generate a random value for production
 - `OPTIONS_PATH`: optional config file path, default is `/config/options.json`
 

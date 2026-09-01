@@ -507,6 +507,14 @@ def build_login_page(error: str = "") -> str:
     </style></head><body><main><div class="brand"><div class="mark">IC</div>Inkjet Conditioner</div><h1>Welcome back.</h1><p>Sign in to configure your printer maintenance schedule.</p>{error_html}<form method="post" action="/login"><label>Username<input name="username" autocomplete="username" required autofocus></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button type="submit">Sign in</button></form><p class="note">Credentials are set in your container configuration.</p></main></body></html>"""
 
 
+def get_webui_credentials() -> tuple[str, str]:
+    username = os.environ.get("WEBUI_USERNAME", "admin")
+    password = os.environ.get("WEBUI_PASSWORD", "")
+    if not password.strip():
+        raise RuntimeError("WEBUI_PASSWORD must be set to a non-empty value.")
+    return username, password
+
+
 def build_app() -> Flask:
     app = Flask(__name__)
     app.secret_key = os.environ.get("WEBUI_SECRET") or token_urlsafe(32)
@@ -528,8 +536,7 @@ def build_app() -> Flask:
     @app.route("/login", methods=["GET", "POST"])
     def login() -> Any:
         if request.method == "POST":
-            username = os.environ.get("WEBUI_USERNAME", "admin")
-            password = os.environ.get("WEBUI_PASSWORD", "inkjet")
+            username, password = get_webui_credentials()
             if compare_digest(request.form.get("username", ""), username) and compare_digest(request.form.get("password", ""), password):
                 session.clear()
                 session["authenticated"] = True
@@ -598,6 +605,7 @@ def build_app() -> Flask:
 
 
 def main() -> int:
+    get_webui_credentials()
     options_path = os.environ.get("OPTIONS_PATH", "/config/options.json")
     options = load_options(options_path)
     options = apply_environment_overrides(options)

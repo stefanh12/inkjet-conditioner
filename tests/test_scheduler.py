@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from app.main import BONJOUR_PRINTER_SERVICE_TYPES, apply_environment_overrides, build_app, build_setup_page, is_setup_complete, save_uploaded_document, should_run_now, build_default_options, resolve_printer_target, discover_printers, discover_mdns_printers, get_webui_port
+from app.main import BONJOUR_PRINTER_SERVICE_TYPES, apply_environment_overrides, build_app, build_setup_page, is_setup_complete, save_uploaded_document, should_run_now, build_default_options, resolve_printer_target, discover_printers, discover_mdns_printers, get_webui_port, main
 
 
 class SchedulerTests(unittest.TestCase):
@@ -63,19 +63,25 @@ class SchedulerTests(unittest.TestCase):
     def test_default_webui_port_is_8000(self):
         self.assertEqual(get_webui_port({"WEBUI_PORT": ""}), 8000)
 
-    def test_web_ui_requires_default_credentials(self):
-        client = build_app().test_client()
-        self.assertEqual(client.get("/", follow_redirects=False).status_code, 302)
-        self.assertEqual(client.get("/healthz").status_code, 200)
-        self.assertIn(b"Welcome back.", client.get("/login").data)
-        response = client.post("/login", data={"username": "admin", "password": "inkjet"}, follow_redirects=True)
+    def test_web_ui_requires_configured_credentials(self):
+        with patch.dict(os.environ, {"WEBUI_USERNAME": "admin", "WEBUI_PASSWORD": "test-password"}, clear=False):
+            client = build_app().test_client()
+            self.assertEqual(client.get("/", follow_redirects=False).status_code, 302)
+            self.assertEqual(client.get("/healthz").status_code, 200)
+            self.assertIn(b"Welcome back.", client.get("/login").data)
+            response = client.post("/login", data={"username": "admin", "password": "test-password"}, follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Keep your ink moving.", response.data)
 
+    def test_startup_requires_web_ui_password(self):
+        with patch.dict(os.environ, {"WEBUI_PASSWORD": ""}, clear=False):
+            with self.assertRaisesRegex(RuntimeError, "WEBUI_PASSWORD must be set"):
+                main()
+
     def test_saving_setup_does_not_print(self):
-        with tempfile.TemporaryDirectory() as temp_dir, patch.dict(os.environ, {"OPTIONS_PATH": os.path.join(temp_dir, "options.json")}, clear=False), patch("app.main.discover_printers", return_value=[]), patch("app.main.print_document") as print_mock:
+        with tempfile.TemporaryDirectory() as temp_dir, patch.dict(os.environ, {"OPTIONS_PATH": os.path.join(temp_dir, "options.json"), "WEBUI_PASSWORD": "test-password"}, clear=False), patch("app.main.discover_printers", return_value=[]), patch("app.main.print_document") as print_mock:
             client = build_app().test_client()
-            client.post("/login", data={"username": "admin", "password": "inkjet"})
+            client.post("/login", data={"username": "admin", "password": "test-password"})
             response = client.post("/api/setup", data={"printer_name": "Office Printer", "action": "save"})
 
         self.assertEqual(response.get_json()["action"], "save")

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>Inkjet Conditioner</title>
+  <rect width="256" height="256" rx="32" fill="#182b38"/>
+  <path fill="#d9f067" d="M70 62h116v42H70z"/>
+  <path fill="#f5f4ed" d="M55 96h146c15 0 27 12 27 27v48H28v-48c0-15 12-27 27-27Zm31 64h84v34H86z"/>
+  <circle cx="190" cy="123" r="9" fill="#ed765d"/>
+  <path fill="#167d79" d="M83 181h90v18H83z"/>
+</svg>

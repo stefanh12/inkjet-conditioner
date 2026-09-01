@@ -5,11 +5,9 @@ services:
       dockerfile: Dockerfile
     container_name: inkjet-conditioner
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     environment:
       WEBUI_PORT: "8000"
-      OPTIONS_PATH: "/data/options.json"
+      WEBUI_PASSWORD: "${WEBUI_PASSWORD:?Set WEBUI_PASSWORD before starting the container}"
       PRINTER_NAME: "Office Printer"
       PRINTER_HOST: "192.168.1.50"
       PRINTER_URI: "ipp://192.168.1.50/ipp/print"
@@ -23,6 +21,6 @@ services:
       SCHEDULE_DAY_OF_MONTH: "1"
       SCHEDULE_DESCRIPTION: "Print every Monday at 08:00"
     volumes:
-      - ./appdata:/data
+      - ./appdata:/config
       - ./print-jobs:/share
     network_mode: host

@@ -19,20 +19,20 @@ The app stores its config in persistent appdata and exposes a small web UI so yo
   <WebUI>http://[IP]:[PORT:8000]/</WebUI>
   <Icon>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/main/icon.svg</Icon>
   <TemplateURL>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/main/inkjet-conditioner.xml</TemplateURL>
-  <ReadMe>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/blob/main/README.md</ReadMe>
+  <ReadMe>https://raw.githubusercontent.com/stefanh12/inkjet-conditioner/main/README.md</ReadMe>
   <DonateText></DonateText>
   <DonateLink></DonateLink>
   <MinVer>6.12.0</MinVer>
   <Config Name="Web UI Port" Target="WEBUI_PORT" Default="8000" Mode="" Description="HTTP port used by the built-in web UI." Type="Port" Display="always" Required="true" Mask="false">8000</Config>
   <Config Name="Web UI Username" Target="WEBUI_USERNAME" Default="admin" Mode="" Description="Username required to access the Web UI." Type="Text" Display="always" Required="true" Mask="false">admin</Config>
-  <Config Name="Web UI Password" Target="WEBUI_PASSWORD" Default="inkjet" Mode="" Description="Password required to access the Web UI. Change this before exposing the app outside your trusted network." Type="Password" Display="always" Required="true" Mask="true">inkjet</Config>
+  <Config Name="Web UI Password" Target="WEBUI_PASSWORD" Default="" Mode="" Description="Required password for access to the Web UI." Type="Password" Display="always" Required="true" Mask="true"></Config>
   <Config Name="Appdata Directory" Target="/config" Default="/mnt/user/appdata/inkjet-conditioner" Mode="rw" Description="Persistent storage for app settings, printer discovery, and print jobs." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/inkjet-conditioner</Config>
-  <Config Name="Shared Print Folder" Target="/share" Default="/mnt/user/print-jobs" Mode="rw" Description="Folder containing documents or uploaded files that should be printed." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/appdata/inkjet-conditioner/print-jobs</Config>
+  <Config Name="Shared Print Folder" Target="/share" Default="/mnt/user/print-jobs" Mode="rw" Description="Folder containing documents that should be printed." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/print-jobs</Config>
   <Config Name="Printer Name" Target="PRINTER_NAME" Default="" Mode="" Description="Friendly printer name shown in the UI and logs." Type="Text" Display="always" Required="false" Mask="false"></Config>
   <Config Name="Printer Host" Target="PRINTER_HOST" Default="" Mode="" Description="Hostname or IP address of the printer on the local network." Type="Text" Display="always" Required="false" Mask="false"></Config>
   <Config Name="Printer URI" Target="PRINTER_URI" Default="" Mode="" Description="Optional printer URI such as ipp://192.168.1.50/ipp/print." Type="Text" Display="always" Required="false" Mask="false"></Config>
   <Config Name="Maintenance Print Text" Target="TEST_PAGE_TEXT" Default="Inkjet Conditioner maintenance print" Mode="" Description="Text included in the maintenance print when no document is selected." Type="Text" Display="always" Required="false" Mask="false">Inkjet Conditioner maintenance print</Config>
-  <Config Name="Document Path" Target="DOCUMENT_PATH" Default="/share/print-jobs/example.txt" Mode="" Description="Optional document to print each time the scheduler or test action runs." Type="Text" Display="always" Required="false" Mask="false">/share/print-jobs/example.txt</Config>
+  <Config Name="Document Path" Target="DOCUMENT_PATH" Default="" Mode="" Description="Optional document to print each time the scheduler or test action runs." Type="Text" Display="always" Required="false" Mask="false"></Config>
   <Config Name="Uploaded Document Name" Target="UPLOADED_DOCUMENT_NAME" Default="" Mode="" Description="Friendly name used when a document is uploaded to the app data directory." Type="Text" Display="always" Required="false" Mask="false"></Config>
   <Config Name="Schedule Enabled" Target="SCHEDULE_ENABLED" Default="false" Mode="" Description="Enable the recurring scheduler." Type="Boolean" Display="always" Required="false" Mask="false">false</Config>
   <Config Name="Schedule Type" Target="SCHEDULE_TYPE" Default="daily" Mode="" Description="Choose daily, weekly, or monthly scheduling." Type="Text" Display="always" Required="false" Mask="false">daily</Config>
