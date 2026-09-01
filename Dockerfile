@@ -11,7 +11,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     DOCUMENTS_DIR=/share \
     OPTIONS_PATH=/config/options.json
 
-RUN pip install --no-cache-dir flask zeroconf
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cups-client cups-daemon \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir flask zeroconf
 
 VOLUME ["/config", "/share"]
 

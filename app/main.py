@@ -435,6 +435,21 @@ def save_uploaded_document(file_obj: Any, filename: str, target_dir: str | None 
     return str(target_path)
 
 
+def configure_printer_queue(printer: Dict[str, str]) -> str:
+    uri = printer.get("uri") or ""
+    queue_name = "inkjet-conditioner"
+    if not uri:
+        return printer.get("name") or "default"
+
+    subprocess.run(
+        ["lpadmin", "-p", queue_name, "-E", "-v", uri, "-m", "everywhere"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return queue_name
+
+
 def print_document(options: Dict[str, Any], document_path: str | None = None) -> Dict[str, Any]:
     printer = resolve_printer_target(options)
     storage = get_storage_paths()
@@ -459,20 +474,21 @@ def print_document(options: Dict[str, Any], document_path: str | None = None) ->
     if uploaded_name and not document_path:
         content = f"Uploaded document: {uploaded_name}\n\n{content}"
 
-    command = None
-    if printer.get("uri"):
-        if job_path and job_path.suffix.lower() in {".pdf", ".png", ".jpg", ".jpeg", ".ps"}:
-            command = ["sh", "-c", f"lp -d {printer['name']} {job_path}"]
-        else:
-            command = ["sh", "-c", f"echo '{content.replace(chr(39), chr(92)+chr(39))}' | lp -d {printer['name']}" ]
-    elif shutil.which("lp"):
-        command = ["lp", "-d", printer.get("name", "default"), str(job_path)]
-
-    if command:
-        try:
-            subprocess.run(command, check=True, capture_output=True, text=True)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            pass
+    try:
+        queue_name = configure_printer_queue(printer)
+        subprocess.run(
+            ["lp", "-d", queue_name, str(job_path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return {
+            "status": "error",
+            "printer": printer,
+            "job_path": str(job_path),
+            "mode": "test-page" if not document_path else "document",
+        }
 
     return {
         "status": "queued",

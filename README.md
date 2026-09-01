@@ -32,7 +32,7 @@ Do not map appdata to `/data`; the container stores persistent state at `/config
 
 ### Networking and discovery
 
-Use `host` networking for automatic printer discovery. It lets the container receive Bonjour/mDNS announcements and scan the Unraid LAN subnet for IPP, IPPS, LPR, and JetDirect/raw printers.
+Use `host` networking for automatic printer discovery. It lets the container receive Bonjour/mDNS announcements and scan the Unraid LAN subnet for IPP, IPPS, LPR, and JetDirect/raw printers. Bonjour-discovered IPP and IPPS printers, including AirPrint printers, are configured as local driverless CUPS queues automatically when a job is sent.
 
 Bridge, macvlan, ipvlan, and custom networks can print to a manually entered printer IP or URI, but automatic discovery is not guaranteed because multicast traffic may not reach the container.
 
@@ -150,7 +150,7 @@ SCHEDULE_DESCRIPTION=Print every Monday at 08:00
 
 ## Notes
 
-The current implementation intentionally stays lightweight and uses a built-in scheduler instead of a full print backend. For more advanced production environments, a future upgrade could add CUPS, IPP, or Samba-based printing support while keeping the same core service behavior.
+The app uses CUPS for local queue management and job submission. Driverless IPP/IPPS printers are supported directly; legacy LPR and raw/JetDirect printers may require a compatible CUPS driver or queue configuration.
 
 ## Development
 

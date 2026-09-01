@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from app.main import BONJOUR_PRINTER_SERVICE_TYPES, apply_environment_overrides, build_app, build_setup_page, is_setup_complete, save_uploaded_document, should_run_now, build_default_options, resolve_printer_target, discover_printers, discover_mdns_printers, get_webui_port, main
+from app.main import BONJOUR_PRINTER_SERVICE_TYPES, apply_environment_overrides, build_app, build_setup_page, is_setup_complete, save_uploaded_document, should_run_now, build_default_options, resolve_printer_target, discover_printers, discover_mdns_printers, get_webui_port, main, print_document
 
 
 class SchedulerTests(unittest.TestCase):
@@ -138,6 +138,21 @@ class SchedulerTests(unittest.TestCase):
             saved_path = save_uploaded_document(io.BytesIO(b"%PDF-1.4\n"), "sample.pdf", temp_dir)
             self.assertTrue(os.path.exists(saved_path))
             self.assertTrue(saved_path.endswith("sample.pdf"))
+
+    def test_print_document_configures_a_cups_queue_for_an_ipp_uri(self):
+        options = {
+            "printer_name": "AirPrint Printer",
+            "printer_uri": "ipps://192.168.1.50:631/ipp/print",
+        }
+        with tempfile.TemporaryDirectory() as temp_dir, patch.dict(os.environ, {"APPDATA_DIR": temp_dir}, clear=False), patch("app.main.subprocess.run") as run_mock:
+            result = print_document(options)
+
+        self.assertEqual(result["status"], "queued")
+        self.assertEqual(
+            run_mock.call_args_list[0].args[0],
+            ["lpadmin", "-p", "inkjet-conditioner", "-E", "-v", "ipps://192.168.1.50:631/ipp/print", "-m", "everywhere"],
+        )
+        self.assertEqual(run_mock.call_args_list[1].args[0][:3], ["lp", "-d", "inkjet-conditioner"])
 
 
 if __name__ == "__main__":
