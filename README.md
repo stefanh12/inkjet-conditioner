@@ -10,13 +10,14 @@ Inkjet Conditioner is a small Docker app for:
 
 ## Unraid Support
 
-Unraid is the supported deployment target. The Community Apps template is [inkjet-conditioner.xml](inkjet-conditioner.xml).
+Unraid is the supported deployment target. The Community Apps template is [inkjet-conditioner.xml](inkjet-conditioner.xml) and pulls the stable `hstefan/inkjet-conditioner:latest` image by default.
 
 1. In Unraid, open **Docker** and select **Add Container**.
 2. Import the template or use its `TemplateURL` after publishing this repository.
-3. Keep the network type set to `host`.
-4. Set a non-empty, unique `WEBUI_PASSWORD`.
-5. Start the container and open `http://UNRAID-IP:8000`.
+3. Select the stable `latest` or development `dev` branch in the install wizard.
+4. Keep the network type set to `host`.
+5. Set a non-empty, unique `WEBUI_PASSWORD`.
+6. Start the container and open `http://UNRAID-IP:8000`.
 
 The username defaults to `admin`; you must choose a Web UI password when installing the container.
 
@@ -56,7 +57,9 @@ docker run --rm -p 8000:8000 \
 
 The GitHub Actions workflow at `.github/workflows/publish-docker.yml` publishes
 `hstefan/inkjet-conditioner` when changes are pushed to `main`, when a `v*` tag
-is pushed, or when it is run manually.
+is pushed, or when it is run manually. The development workflow at
+`.github/workflows/publish-dev-docker.yml` publishes `hstefan/inkjet-conditioner:dev`
+when changes are pushed to the `dev` branch or when it is run manually.
 
 Add these repository secrets in GitHub under **Settings > Secrets and variables > Actions**:
 
@@ -64,7 +67,8 @@ Add these repository secrets in GitHub under **Settings > Secrets and variables 
 - `DOCKERHUB_TOKEN`: a Docker Hub personal access token with read/write permission
 
 The workflow publishes `latest` from `main`, and publishes the matching version
-tag for a Git tag such as `v1.0.0`.
+tag for a Git tag such as `v1.0.0`. Create and push the `dev` branch to begin
+publishing development images.
 
 ### Docker Compose example
 
