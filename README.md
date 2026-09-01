@@ -38,6 +38,12 @@ Bridge, macvlan, ipvlan, and custom networks can print to a manually entered pri
 
 If no printer appears, wait a few seconds after startup, use **Refresh discovery** in the Web UI, then confirm that the printer and Unraid server are on a routable LAN. Manual printer host and URI fields remain available.
 
+### Printer status and supplies
+
+After a printer with a host or IPP/IPPS URI is configured, the Web UI shows its reported state, make and model, and supply levels. Supply levels are available only when the printer exposes them through IPP; unsupported devices show that ink levels are not reported.
+
+The app labels recognizable inkjet and laser printer models. If the printer does not identify its type clearly, the UI reports the type as unknown instead of guessing. LPR and raw/JetDirect printers can still be used for printing, but they do not provide status or supply information through this feature.
+
 ## Local Docker development
 
 ```bash

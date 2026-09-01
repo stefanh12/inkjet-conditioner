@@ -1,10 +1,12 @@
 import ipaddress
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 from hmac import compare_digest
 from datetime import datetime, timedelta
 from html import escape
@@ -138,7 +140,7 @@ def build_setup_page(options: Dict[str, Any]) -> str:
     default_uploads_path = str(storage["uploads"])
     value = lambda key, fallback="": escape(str(options.get(key, fallback)), quote=True)
 
-    return f"""
+    page = f"""
     <!doctype html>
         <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Inkjet Conditioner</title><style>
             :root {{ --ink:#182b38;--muted:#60727a;--paper:#f5f4ed;--panel:#fff;--line:#d7ded8;--lime:#d9f067;--coral:#ed765d;--teal:#167d79; }} * {{ box-sizing:border-box; }} body {{ margin:0;color:var(--ink);background-color:var(--paper);background-image:linear-gradient(#dfe6df 1px,transparent 1px),linear-gradient(90deg,#dfe6df 1px,transparent 1px);background-size:32px 32px;font-family:Avenir Next,Avenir,Futura,sans-serif;letter-spacing:0; }} .shell {{ min-height:100vh;display:grid;grid-template-columns:260px minmax(0,1fr); }} .rail {{ padding:32px 24px;background:var(--ink);color:#f8fbf5;display:flex;flex-direction:column;gap:42px; }} .brand {{ display:flex;align-items:center;gap:12px;font-weight:800;font-size:17px; }} .mark {{ display:grid;place-items:center;width:36px;height:36px;border:2px solid var(--lime);color:var(--lime);font-family:Georgia,serif;font-size:19px; }} .rail nav {{ display:grid;gap:10px; }} .nav-item {{ padding:11px 12px;color:#b9c8c4;border-left:3px solid transparent;font-size:14px; }} .nav-item.active {{ color:white;border-left-color:var(--lime);background:#243d4d; }} .rail-foot {{ margin-top:auto;border-top:1px solid #3c5260;padding-top:20px;color:#b9c8c4;font-size:12px;line-height:1.6; }} .dot {{ display:inline-block;width:8px;height:8px;margin-right:7px;background:var(--lime);border-radius:50%; }} main {{ padding:36px clamp(24px,5vw,80px) 56px;max-width:1250px;width:100%; }} .topbar {{ display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:32px; }} .eyebrow {{ margin:0 0 8px;color:var(--teal);font-size:12px;font-weight:800;text-transform:uppercase; }} h1 {{ margin:0;font-family:Georgia,serif;font-weight:400;font-size:clamp(34px,4vw,52px);line-height:1.02; }} .subtitle {{ max-width:560px;margin:14px 0 0;color:var(--muted);line-height:1.5; }} .status-pill {{ white-space:nowrap;border:1px solid var(--line);background:var(--panel);padding:9px 12px;color:var(--teal);font-size:12px;font-weight:800; }} form {{ display:grid;gap:16px; }} .section {{ background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:5px 5px 0 #dfe5d9; }} .section-head {{ display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 24px;border-bottom:1px solid var(--line); }} .section-index {{ color:var(--coral);font-size:12px;font-weight:800; }} h2 {{ margin:0;font-size:17px; }} .section-body {{ padding:24px; }} .discovery {{ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--line); }} label {{ display:grid;gap:7px;color:#40535b;font-size:12px;font-weight:800;text-transform:uppercase; }} input,select {{ width:100%;min-height:44px;padding:10px 12px;border:1px solid #bac7c1;border-radius:4px;color:var(--ink);background:#fcfdf9;font:inherit;font-size:15px; }} input:focus,select:focus {{ outline:3px solid var(--lime);outline-offset:1px;border-color:var(--ink); }} .grid-3 {{ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:22px; }} button {{ min-height:44px;border:0;border-radius:4px;padding:0 16px;background:var(--ink);color:white;font:inherit;font-size:14px;font-weight:800;cursor:pointer; }} button:hover {{ background:#294555; }} .secondary {{ background:#e8eee7;color:var(--ink);border:1px solid #cdd7d0; }} .file-control {{ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:17px;background:#f1f5ed;border:1px dashed #9eb0a6;border-radius:5px; }} .file-control strong {{ display:block;font-size:14px; }} .file-control span {{ display:block;margin-top:4px;color:var(--muted);font-size:12px; }} input[type=file] {{ position:absolute;width:1px;height:1px;opacity:0; }} .file-label {{ display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;background:var(--panel);border:1px solid #bac7c1;border-radius:4px;color:var(--ink);cursor:pointer;font-size:13px;font-weight:800;text-transform:none; }} .schedule-top {{ display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:22px; }} .switch {{ display:inline-flex;align-items:center;gap:10px;color:var(--ink);font-size:14px;font-weight:800;text-transform:none; }} .switch input {{ appearance:none;width:44px;min-height:24px;padding:2px;border-radius:20px;background:#bdc9c3; }} .switch input::after {{ content:'';display:block;width:18px;height:18px;background:white;border-radius:50%;transition:.2s; }} .switch input:checked {{ background:var(--teal); }} .switch input:checked::after {{ transform:translateX(18px); }} .segments {{ display:flex;border:1px solid #bac7c1;border-radius:5px;overflow:hidden; }} .segments label {{ flex:1;display:block;text-align:center;padding:10px;border-right:1px solid #bac7c1;cursor:pointer;font-size:12px; }} .segments label:last-child {{ border:0; }} .segments input {{ position:absolute;opacity:0; }} .segments label:has(input:checked) {{ background:var(--lime);color:var(--ink); }} .action-row {{ display:flex;justify-content:space-between;align-items:center;gap:20px;padding:8px 0; }} .hint,#result {{ margin:0;color:var(--muted);font-size:13px; }} #result {{ color:var(--teal);font-weight:800; }} @media (max-width:760px) {{ .shell {{ display:block; }} .rail {{ padding:16px 20px;flex-direction:row;align-items:center;gap:0; }} .rail nav,.rail-foot {{ display:none; }} main {{ padding:28px 20px 40px; }} .topbar {{ display:block; }} .status-pill {{ display:inline-block;margin-top:18px; }} .grid-3 {{ grid-template-columns:1fr; }} .discovery,.file-control {{ grid-template-columns:1fr;align-items:stretch; }} .schedule-top,.action-row {{ align-items:flex-start;flex-direction:column; }} }}
@@ -198,6 +200,69 @@ def build_setup_page(options: Dict[str, Any]) -> str:
                 </script></body>
     </html>
     """
+    status_panel = """
+    <section id="printer-status" hidden style="margin:0 0 24px;border:1px solid var(--line);background:var(--panel);padding:20px">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:start"><div><span class="section-index">PRINTER STATUS</span><h2 id="printer-status-name" style="margin:5px 0 0">Configured printer</h2></div><button class="secondary" type="button" onclick="refreshPrinterStatus()">Refresh status</button></div>
+      <p id="printer-status-summary" class="hint" style="margin:14px 0 0"></p>
+      <div id="printer-supplies" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px"></div>
+    </section>
+    """
+    return page.replace("</header>", "</header>" + status_panel).replace(
+        "setTimeout(refreshPrinters,3500);",
+        """async function refreshPrinterStatus() {{ const panel=document.getElementById('printer-status'); const response=await fetch('/api/printer-status'); const data=await response.json(); if (!data.configured) {{ panel.hidden=true; return; }} panel.hidden=false; document.getElementById('printer-status-name').textContent=data.printer.name; const type=data.is_inkjet === true ? 'Inkjet printer' : data.is_inkjet === false ? 'Not an inkjet printer' : 'Printer type unknown'; document.getElementById('printer-status-summary').textContent=`${{data.state}} · ${{type}}${{data.model ? ` · ${{data.model}}` : ''}}`; const supplies=document.getElementById('printer-supplies'); supplies.innerHTML=data.supplies.length ? data.supplies.map((supply)=>`<div style="border:1px solid var(--line);padding:10px"><strong>${{supply.name}}</strong><div style="margin-top:5px;color:var(--teal);font-size:20px">${{supply.level}}%</div></div>`).join('') : '<span class="hint">Ink levels are not reported by this printer.</span>'; }} refreshPrinterStatus(); setTimeout(refreshPrinters,3500);""",
+    )
+
+
+def classify_printer_type(model: str) -> bool | None:
+    normalized_model = model.lower()
+    if any(term in normalized_model for term in ("laserjet", "laser printer", "laser mfp")):
+        return False
+    if any(term in normalized_model for term in ("inkjet", "officejet", "deskjet", "pixma", "ecotank", "workforce", "expression", "photosmart", "envy")):
+        return True
+    return None
+
+
+def get_printer_status(options: Dict[str, Any]) -> Dict[str, Any]:
+    printer = resolve_printer_target(options)
+    uri = printer.get("uri") or ""
+    if not (printer.get("host") or uri):
+        return {"configured": False, "printer": printer, "state": "Not configured", "model": "", "is_inkjet": None, "supplies": []}
+
+    attributes: Dict[str, List[str]] = {}
+    if uri.startswith(("ipp://", "ipps://")):
+        query = """{
+NAME \"Get printer status\"
+OPERATION Get-Printer-Attributes
+GROUP operation-attributes-tag
+ATTR charset attributes-charset utf-8
+ATTR language attributes-natural-language en
+ATTR uri printer-uri $uri
+ATTR keyword requested-attributes printer-state,printer-state-reasons,printer-make-and-model,printer-supply-description,printer-supply-levels
+STATUS successful-ok
+}"""
+        try:
+            with tempfile.NamedTemporaryFile("w", suffix=".test", encoding="utf-8") as query_file:
+                query_file.write(query)
+                query_file.flush()
+                result = subprocess.run(["ipptool", "-t", "-v", uri, query_file.name], capture_output=True, text=True, timeout=10, check=False)
+            for line in result.stdout.splitlines():
+                match = re.match(r"\s*([a-z][a-z0-9-]+).*?=\s*(.+?)\s*$", line, re.IGNORECASE)
+                if match:
+                    attributes.setdefault(match.group(1).lower(), []).append(match.group(2).strip().strip('"'))
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    model = (attributes.get("printer-make-and-model") or [printer.get("name") or ""])[0]
+    raw_state = (attributes.get("printer-state") or ["Unknown"])[0].lower()
+    states = {"3": "Idle", "4": "Printing", "5": "Stopped", "idle": "Idle", "processing": "Printing", "stopped": "Stopped"}
+    descriptions = attributes.get("printer-supply-description", [])
+    levels = re.findall(r"-?\d+", ",".join(attributes.get("printer-supply-levels", [])))
+    supplies = [
+        {"name": descriptions[index] if index < len(descriptions) else f"Supply {index + 1}", "level": max(0, min(100, int(level)))}
+        for index, level in enumerate(levels)
+        if int(level) >= 0
+    ]
+    return {"configured": True, "printer": printer, "state": states.get(raw_state, raw_state.title()), "model": model, "is_inkjet": classify_printer_type(model), "supplies": supplies}
 
 
 def build_status_page(options: Dict[str, Any]) -> str:
@@ -616,6 +681,11 @@ def build_app() -> Flask:
         options_path = os.environ.get("OPTIONS_PATH", "/config/options.json")
         options = load_options(options_path)
         return jsonify({"printers": options.get("discovered_printers", [])})
+
+    @app.route("/api/printer-status")
+    def printer_status() -> Any:
+        options_path = os.environ.get("OPTIONS_PATH", "/config/options.json")
+        return jsonify(get_printer_status(load_options(options_path)))
 
     return app
 

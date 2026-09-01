@@ -12,7 +12,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     OPTIONS_PATH=/config/options.json
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends cups-client cups-daemon \
+    && apt-get install -y --no-install-recommends cups-client cups-daemon cups-ipp-utils \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir flask zeroconf
 

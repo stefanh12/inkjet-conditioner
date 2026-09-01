@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from app.main import BONJOUR_PRINTER_SERVICE_TYPES, apply_environment_overrides, build_app, build_setup_page, is_setup_complete, save_uploaded_document, should_run_now, build_default_options, resolve_printer_target, discover_printers, discover_mdns_printers, get_webui_port, main, print_document
+from app.main import BONJOUR_PRINTER_SERVICE_TYPES, apply_environment_overrides, build_app, build_setup_page, get_printer_status, is_setup_complete, save_uploaded_document, should_run_now, build_default_options, resolve_printer_target, discover_printers, discover_mdns_printers, get_webui_port, main, print_document
 
 
 class SchedulerTests(unittest.TestCase):
@@ -153,6 +153,22 @@ class SchedulerTests(unittest.TestCase):
             ["lpadmin", "-p", "inkjet-conditioner", "-E", "-v", "ipps://192.168.1.50:631/ipp/print", "-m", "everywhere"],
         )
         self.assertEqual(run_mock.call_args_list[1].args[0][:3], ["lp", "-d", "inkjet-conditioner"])
+
+    def test_printer_status_reports_ipp_ink_levels_and_laser_type(self):
+        options = {"printer_name": "LaserJet", "printer_uri": "ipp://192.168.1.50/ipp/print"}
+        ipptool_output = """printer-state (enum) = idle
+printer-make-and-model (textWithoutLanguage) = HP LaserJet Pro
+printer-supply-description (textWithoutLanguage) = Black toner
+printer-supply-levels (integer) = 62
+"""
+        with patch("app.main.subprocess.run") as run_mock:
+            run_mock.return_value.stdout = ipptool_output
+            status = get_printer_status(options)
+
+        self.assertTrue(status["configured"])
+        self.assertEqual(status["state"], "Idle")
+        self.assertFalse(status["is_inkjet"])
+        self.assertEqual(status["supplies"], [{"name": "Black toner", "level": 62}])
 
 
 if __name__ == "__main__":
