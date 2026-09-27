@@ -74,8 +74,9 @@ Add these repository secrets in GitHub under **Settings > Secrets and variables 
 - `DOCKERHUB_TOKEN`: a Docker Hub personal access token with read/write permission
 
 The workflow publishes `latest` from `main`, and publishes the matching version
-tag for a Git tag such as `v1.0.0`. Create and push the `dev` branch to begin
-publishing development images.
+tag for a Git tag such as `v1.0.0`. When manually running **Publish Docker
+image**, provide a version such as `1.0.0` to publish that Docker tag. Create
+and push the `dev` branch to begin publishing development images.
 
 ### Docker Compose example
 
