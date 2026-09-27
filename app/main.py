@@ -171,6 +171,9 @@ def build_setup_page(options: Dict[str, Any]) -> str:
                         const action = event.submitter?.value || 'test';
                         result.textContent = action === 'test' ? 'Saving configuration and sending maintenance print...' : 'Saving configuration...';
                         const formData = new FormData(setupForm);
+                        const detectedPrinter = document.getElementById('detected-printers');
+                        formData.set('detected_printer_host', detectedPrinter.value);
+                        formData.set('detected_printer_uri', detectedPrinter.selectedOptions[0]?.dataset.uri || '');
                         formData.set('action', action);
                         const response = await fetch('/api/setup', {{ method: 'POST', body: formData }});
                         const data = await response.json();
@@ -660,6 +663,22 @@ def build_app() -> Flask:
         ]:
             if key in payload and payload[key] not in (None, ""):
                 options[key] = payload[key]
+
+        selected_host = payload.get("detected_printer_host", "")
+        selected_uri = payload.get("detected_printer_uri", "")
+        selected_printer = next(
+            (printer for printer in options.get("discovered_printers", []) if printer.get("uri") == selected_uri),
+            None,
+        )
+        if selected_printer is None:
+            selected_printer = next(
+                (printer for printer in options.get("discovered_printers", []) if printer.get("host") == selected_host),
+                None,
+            )
+        if selected_printer:
+            options["printer_name"] = selected_printer.get("name", "")
+            options["printer_host"] = selected_printer.get("host", "")
+            options["printer_uri"] = selected_printer.get("uri", "")
 
         if uploaded_file and uploaded_file.filename:
             saved_path = save_uploaded_document(uploaded_file, uploaded_file.filename)

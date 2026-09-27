@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from app.main import BONJOUR_PRINTER_SERVICE_TYPES, apply_environment_overrides, build_app, build_setup_page, get_printer_status, is_setup_complete, save_uploaded_document, should_run_now, build_default_options, resolve_printer_target, discover_printers, discover_mdns_printers, get_webui_port, main, print_document
+from app.main import BONJOUR_PRINTER_SERVICE_TYPES, apply_environment_overrides, build_app, build_setup_page, get_printer_status, is_setup_complete, load_options, save_options, save_uploaded_document, should_run_now, build_default_options, resolve_printer_target, discover_printers, discover_mdns_printers, get_webui_port, main, print_document
 
 
 class SchedulerTests(unittest.TestCase):
@@ -87,6 +87,24 @@ class SchedulerTests(unittest.TestCase):
         self.assertEqual(response.get_json()["action"], "save")
         self.assertIsNone(response.get_json()["result"])
         print_mock.assert_not_called()
+
+    def test_saving_detected_printer_persists_its_details(self):
+        printer = {
+            "name": "EPSON ET-2870 Series",
+            "host": "192.168.1.171",
+            "uri": "ipps://192.168.1.171:631/ipp/print",
+        }
+        with tempfile.TemporaryDirectory() as temp_dir, patch.dict(os.environ, {"OPTIONS_PATH": os.path.join(temp_dir, "options.json"), "WEBUI_PASSWORD": "test-password"}, clear=False):
+            options_path = os.environ["OPTIONS_PATH"]
+            save_options(options_path, {**build_default_options(), "discovered_printers": [printer]})
+            client = build_app().test_client()
+            client.post("/login", data={"username": "admin", "password": "test-password"})
+            client.post("/api/setup", data={"detected_printer_host": printer["host"], "detected_printer_uri": printer["uri"], "action": "save"})
+            saved_options = load_options(options_path)
+
+        self.assertEqual(saved_options["printer_name"], printer["name"])
+        self.assertEqual(saved_options["printer_host"], printer["host"])
+        self.assertEqual(saved_options["printer_uri"], printer["uri"])
 
     def test_environment_override_webui_port_is_used(self):
         self.assertEqual(get_webui_port({"WEBUI_PORT": "8081"}), 8081)
