@@ -155,6 +155,12 @@ def build_setup_page(options: Dict[str, Any]) -> str:
                     frequencyControl.style.display = 'grid';
                     frequencyControl.style.gap = '7px';
                     const setupForm = document.getElementById('setup-form');
+                    applyDetectedPrinter = (select) => {{
+                        const selected = select.selectedOptions[0];
+                        if (!selected?.value) return;
+                        setupForm.printer_host.value = selected.value;
+                        setupForm.printer_uri.value = selected.dataset.uri || setupForm.printer_uri.value;
+                    }};
                     const testButton = setupForm.querySelector('.action-row button');
                     testButton.textContent = 'Save and test print';
                     testButton.value = 'test';
@@ -172,6 +178,7 @@ def build_setup_page(options: Dict[str, Any]) -> str:
                         result.textContent = action === 'test' ? 'Saving configuration and sending maintenance print...' : 'Saving configuration...';
                         const formData = new FormData(setupForm);
                         const detectedPrinter = document.getElementById('detected-printers');
+                        formData.set('detected_printer_name', detectedPrinter.selectedOptions[0]?.dataset.name || '');
                         formData.set('detected_printer_host', detectedPrinter.value);
                         formData.set('detected_printer_uri', detectedPrinter.selectedOptions[0]?.dataset.uri || '');
                         formData.set('action', action);
@@ -211,6 +218,7 @@ def build_setup_page(options: Dict[str, Any]) -> str:
       <div id="printer-supplies" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px"></div>
     </section>
     """
+    page = re.sub(r'<label>Printer name<input name="printer_name"[^>]*></label>', "", page)
     return page.replace("</header>", "</header>" + status_panel).replace(
         "setTimeout(refreshPrinters,3500);",
         """async function refreshPrinterStatus() {{ const panel=document.getElementById('printer-status'); const response=await fetch('/api/printer-status'); const data=await response.json(); if (!data.configured) {{ panel.hidden=true; return; }} panel.hidden=false; document.getElementById('printer-status-name').textContent=data.printer.name; const type=data.is_inkjet === true ? 'Inkjet printer' : data.is_inkjet === false ? 'Not an inkjet printer' : 'Printer type unknown'; document.getElementById('printer-status-summary').textContent=`${{data.state}} · ${{type}}${{data.model ? ` · ${{data.model}}` : ''}}`; const supplies=document.getElementById('printer-supplies'); supplies.innerHTML=data.supplies.length ? data.supplies.map((supply)=>`<div style="border:1px solid var(--line);padding:10px"><strong>${{supply.name}}</strong><div style="margin-top:5px;color:var(--teal);font-size:20px">${{supply.level}}%</div></div>`).join('') : '<span class="hint">Ink levels are not reported by this printer.</span>'; }} refreshPrinterStatus(); setTimeout(refreshPrinters,3500);""",
@@ -664,8 +672,13 @@ def build_app() -> Flask:
             if key in payload and payload[key] not in (None, ""):
                 options[key] = payload[key]
 
+        selected_name = payload.get("detected_printer_name", "")
         selected_host = payload.get("detected_printer_host", "")
         selected_uri = payload.get("detected_printer_uri", "")
+        if selected_host or selected_uri:
+            options["printer_name"] = selected_name or options.get("printer_name", "")
+            options["printer_host"] = selected_host or options.get("printer_host", "")
+            options["printer_uri"] = selected_uri or options.get("printer_uri", "")
         selected_printer = next(
             (printer for printer in options.get("discovered_printers", []) if printer.get("uri") == selected_uri),
             None,

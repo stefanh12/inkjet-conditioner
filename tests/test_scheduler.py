@@ -96,15 +96,20 @@ class SchedulerTests(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as temp_dir, patch.dict(os.environ, {"OPTIONS_PATH": os.path.join(temp_dir, "options.json"), "WEBUI_PASSWORD": "test-password"}, clear=False):
             options_path = os.environ["OPTIONS_PATH"]
-            save_options(options_path, {**build_default_options(), "discovered_printers": [printer]})
+            save_options(options_path, build_default_options())
             client = build_app().test_client()
             client.post("/login", data={"username": "admin", "password": "test-password"})
-            client.post("/api/setup", data={"detected_printer_host": printer["host"], "detected_printer_uri": printer["uri"], "action": "save"})
+            client.post("/api/setup", data={"detected_printer_name": printer["name"], "detected_printer_host": printer["host"], "detected_printer_uri": printer["uri"], "action": "save"})
             saved_options = load_options(options_path)
 
         self.assertEqual(saved_options["printer_name"], printer["name"])
         self.assertEqual(saved_options["printer_host"], printer["host"])
         self.assertEqual(saved_options["printer_uri"], printer["uri"])
+
+    def test_setup_page_hides_editable_printer_name(self):
+        page = build_setup_page(build_default_options())
+
+        self.assertNotIn('name="printer_name"', page)
 
     def test_environment_override_webui_port_is_used(self):
         self.assertEqual(get_webui_port({"WEBUI_PORT": "8081"}), 8081)
