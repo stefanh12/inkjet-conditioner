@@ -718,7 +718,9 @@ def main() -> int:
         result = run_scheduler(options)
         print(json.dumps(result, indent=2))
 
-    app.run(host="0.0.0.0", port=port, debug=False)
+    from waitress import serve
+
+    serve(app, host="0.0.0.0", port=port)
     return 0
 
 

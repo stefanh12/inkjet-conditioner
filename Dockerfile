@@ -14,7 +14,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends cups-client cups-daemon cups-ipp-utils \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir flask zeroconf
+    && pip install --no-cache-dir flask waitress zeroconf
 
 VOLUME ["/config", "/share"]
 
