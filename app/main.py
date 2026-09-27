@@ -592,8 +592,10 @@ def run_scheduler(options: Dict[str, Any], now: str | None = None) -> Dict[str, 
 
 def refresh_discovered_printers(options_path: str) -> None:
     options = load_options(options_path)
-    options["discovered_printers"] = discover_printers(options)
-    save_options(options_path, options)
+    discovered_printers = discover_printers(options)
+    latest_options = load_options(options_path)
+    latest_options["discovered_printers"] = discovered_printers
+    save_options(options_path, latest_options)
 
 
 def build_login_page(error: str = "") -> str:

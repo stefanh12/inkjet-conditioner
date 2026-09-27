@@ -133,6 +133,29 @@ class SchedulerTests(unittest.TestCase):
         self.assertEqual(options["schedule_hour"], 9)
         self.assertEqual(options["schedule_weekday"], "friday")
 
+    def test_discovery_refresh_preserves_settings_saved_during_scan(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            options_path = os.path.join(temp_dir, "options.json")
+            save_options(options_path, build_default_options())
+
+            def save_settings_during_discovery(_options):
+                saved_options = load_options(options_path)
+                saved_options["document_path"] = "/share/maintenance.pdf"
+                saved_options["printer_uri"] = "ipp://192.168.1.50/ipp/print"
+                save_options(options_path, saved_options)
+                return [{"name": "Discovered printer", "host": "192.168.1.99", "uri": "ipp://192.168.1.99/ipp/print"}]
+
+            with patch("app.main.discover_printers", side_effect=save_settings_during_discovery):
+                from app.main import refresh_discovered_printers
+
+                refresh_discovered_printers(options_path)
+
+            refreshed_options = load_options(options_path)
+
+        self.assertEqual(refreshed_options["document_path"], "/share/maintenance.pdf")
+        self.assertEqual(refreshed_options["printer_uri"], "ipp://192.168.1.50/ipp/print")
+        self.assertEqual(refreshed_options["discovered_printers"][0]["name"], "Discovered printer")
+
     def test_default_options_mark_setup_as_incomplete(self):
         options = build_default_options()
         self.assertFalse(is_setup_complete(options))
