@@ -1,3 +1,4 @@
+[![Publish Docker image](https://github.com/stefanh12/inkjet-conditioner/actions/workflows/publish-docker.yml/badge.svg)](https://github.com/stefanh12/inkjet-conditioner/actions/workflows/publish-docker.yml)
 # Inkjet Conditioner
 
 <img src="icons/conditioner%20256%E2%80%8A%20%C3%97%E2%80%8A%20256.png" alt="Inkjet Conditioner icon" width="128">
